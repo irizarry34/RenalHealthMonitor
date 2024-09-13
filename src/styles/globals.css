@@ -2,12 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Variables de color */
 :root {
   --background: #f4f4f4;
   --foreground: #333333;
   --primary: #0044cc; /* Color principal */
   --secondary: #00bfae; /* Color secundario */
   --card-bg: #ffffff; /* Fondo de tarjetas */
+  --border-radius: 8px; /* Radio de borde para botones y tarjetas */
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra de tarjeta */
+  --transition: all 0.3s ease; /* Transiciones suaves */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,30 +21,95 @@
     --primary: #0044cc; /* Puedes ajustar estos colores para el modo oscuro también */
     --secondary: #00bfae;
     --card-bg: #1e1e1e;
+    --shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra más fuerte en modo oscuro */
   }
 }
 
+/* Estilos básicos para el cuerpo */
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
+/* Estilos para enlaces */
 a {
   color: var(--primary);
-  transition: color 0.3s;
+  transition: color var(--transition);
 }
 
 a:hover {
   color: var(--secondary);
 }
 
+/* Estilos para botones */
 button {
   cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
+  transition: background-color var(--transition), color var(--transition);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
   background-color: var(--primary);
   color: white;
 }
+
+button:hover {
+  background-color: var(--secondary);
+}
+
+/* Estilos para tarjetas */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+/* Estilos para el contenedor principal */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Estilos de navegación */
+nav {
+  background-color: var(--primary);
+  color: white;
+}
+
+nav a {
+  color: white;
+  margin: 0 1rem;
+  transition: color var(--transition);
+}
+
+nav a:hover {
+  color: var(--secondary);
+}
+
+/* Estilos del pie de página */
+footer {
+  background-color: var(--primary);
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Estilos de formularios */
+input, textarea {
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  transition: border-color var(--transition);
+}
+
+input:focus, textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+

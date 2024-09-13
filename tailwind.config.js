@@ -1,17 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primary: '#0044cc', // Un color azul profesional
+        secondary: '#00bfae', // Un verde fresco
+        background: '#f4f4f4', // Fondo claro para el cuerpo
+        card: '#ffffff', // Fondo blanco para tarjetas
+        textPrimary: '#333333', // Texto oscuro para contraste
+        textSecondary: '#555555', // Texto secundario más claro
+      },
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // Fuente moderna y profesional
       },
     },
   },
   plugins: [],
-};
+}
