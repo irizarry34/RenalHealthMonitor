@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f4f4;
+  --foreground: #333333;
+  --primary: #0044cc; /* Color principal */
+  --secondary: #00bfae; /* Color secundario */
+  --card-bg: #ffffff; /* Fondo de tarjetas */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;
+    --foreground: #e0e0e0;
+    --primary: #0044cc; /* Puedes ajustar estos colores para el modo oscuro también */
+    --secondary: #00bfae;
+    --card-bg: #1e1e1e;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Poppins', sans-serif;
+}
+
+a {
+  color: var(--primary);
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--secondary);
+}
+
+button {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: var(--primary);
+  color: white;
+}
