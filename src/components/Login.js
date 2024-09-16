@@ -2,22 +2,29 @@
 
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { useRouter } from 'next/navigation'; // Para redirigir al usuario después del login
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const router = useRouter(); // Para redirigir al usuario después del login
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Intentar loguearse con el email y contraseña ingresados
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
     if (error) {
+      // Si hay un error en el login, mostrar el mensaje
       setError(error.message);
     } else {
-      // Redirige o muestra un mensaje de éxito
+      // Si el login es exitoso, redirigir a la página de lecturas
+      router.push('/readings'); // Ajusta la ruta a la que quieras redirigir después del login
     }
   };
 

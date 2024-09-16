@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useRouter } from 'next/navigation';  // Importar el hook para redireccionar
 
 export default function Readings() {
   const [glucose, setGlucose] = useState('');
@@ -10,7 +11,28 @@ export default function Readings() {
   const [sex, setSex] = useState('M');
   const [notes, setNotes] = useState('');
   const [gfr, setGfr] = useState(null);
+  const [userId, setUserId] = useState(null);  // Estado para almacenar el user_id
+  const router = useRouter();  // Para redirigir si no hay sesión
 
+  // Obtener el usuario autenticado
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error obteniendo la sesión:', error);
+        return;
+      }
+      if (!session) {
+        router.push('/login'); // Redirigir al login si no hay sesión
+      } else {
+        setUserId(session.user.id); // Guardar el user_id en el estado
+      }
+    };
+
+    fetchUser();
+  }, [router]);
+
+  // Calcular el GFR
   const calculateGFR = (creatinine, age, sex) => {
     let k = sex === 'M' ? 0.9 : 0.7;
     let e = sex === 'M' ? 1.0 : 0.7;
@@ -20,20 +42,28 @@ export default function Readings() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!userId) {
+      alert('Usuario no autenticado');
+      return;
+    }
+
     const calculatedGfr = calculateGFR(creatinine, age, sex);
 
     const { data, error } = await supabase
       .from('analytes_readings')
       .insert([
         {
+          user_id: userId,  // Insertar el user_id del usuario autenticado
           glucose_level: glucose,
           creatinine_level: creatinine,
           age: age,
           sex: sex,
           notes: notes,
           gfr: calculatedGfr,
-          reference_glucose_range: '70-100 mg/dL',
-          reference_creatinine_range: '0.6-1.2 mg/dL'
+          glucose_reference_min: 70,  // Valor mínimo de referencia para glucosa
+          glucose_reference_max: 100, // Valor máximo de referencia para glucosa
+          creatinine_reference_max: 1.2, // Valor máximo de referencia
+          creatinine_reference_min: 0.6, // Valor mínimo de referencia
         }
       ]);
 
