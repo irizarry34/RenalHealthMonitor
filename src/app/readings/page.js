@@ -77,62 +77,67 @@ export default function Readings() {
   };
 
   return (
-    <div className="p-4 max-w-lg mx-auto">
-      <h1 className="text-2xl mb-4">Registro de Lecturas</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Glucosa</label>
-          <input
-            type="number"
-            value={glucose}
-            onChange={(e) => setGlucose(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Nivel de glucosa"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Creatinina</label>
-          <input
-            type="number"
-            value={creatinine}
-            onChange={(e) => setCreatinine(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Nivel de creatinina"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Edad</label>
-          <input
-            type="number"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Edad"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Sexo</label>
-          <select
-            value={sex}
-            onChange={(e) => setSex(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-          >
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Comentarios</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Notas adicionales"
-          />
-        </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Guardar Lectura</button>
-        {gfr && <div className="mt-4">GFR Calculado: {gfr.toFixed(2)}</div>}
-      </form>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-[-15rem]">
+        <h1 className="text-2xl mb-4 text-center">Registro de Lecturas</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Glucosa:</label>
+            <input
+              type="number"
+              value={glucose}
+              onChange={(e) => setGlucose(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Nivel de glucosa"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Creatinina:</label>
+            <input
+              type="number"
+              value={creatinine}
+              onChange={(e) => setCreatinine(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Nivel de creatinina"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Edad:</label>
+            <input
+              type="number"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Edad"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Género:</label>
+            <select
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            >
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="U">No binario / Género diverso</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Comentarios:</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Notas adicionales"
+            />
+          </div>
+          <div className="mb-4 flex justify-center">
+            <button type="submit" className="bg-bloodRed hover:bg-bloodRedOrgange text-white px-4 py-2 rounded">Guardar Lectura</button>
+          </div>
+          {gfr && <div className="mt-4 text-center">GFR Calculado: {gfr.toFixed(2)}</div>}
+        </form>
+      </div>
     </div>
   );
 }

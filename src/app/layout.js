@@ -21,24 +21,40 @@ export default function Layout({ children }) {
     };
   }, []);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+  };
+
   return (
     <html lang="en">
       <body className="bg-gray-100 text-gray-800 font-sans antialiased">
-        <nav className="bg-blue-600 p-4 text-white shadow-md">
+        <nav className="bg-mintGreendark p-4 text-white shadow-md shadow-lg rounded-lg">
           <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Health Monitor</h1>
-            <div>
+            {/* Botón de inicio */}
+            <Link href="/" className="text-2xl font-bold text-white hover:text-bloodRedOrgange">
+              Renal Health Monitor
+            </Link>
+            <div className="flex items-center space-x-4">
               {!session ? (
                 <>
-                  <Link href="/login" className="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700">
+                  <Link href="/login" className="px-4 py-2 rounded bg-bloodRed hover:bg-bloodRedOrgange">
                     Login
                   </Link>
-                  <Link href="/signup" className="ml-4 px-4 py-2 rounded bg-green-500 hover:bg-green-700">
-                    Sign Up
+                  <Link href="/signup" className="px-4 py-2 rounded bg-bloodRed hover:bg-bloodRedOrgange">
+                    SignUp
                   </Link>
                 </>
               ) : (
-                <p className="font-semibold">Welcome, {session.user.email}!</p>
+                <>
+                  <p className="font-semibold">Welcome, {session.user.email}!</p>
+                  <button 
+                    onClick={handleSignOut} 
+                    className="px-4 py-2 rounded bg-bloodRed hover:bg-bloodRedOrgange text-white"
+                  >
+                    Sign Out
+                  </button>
+                </>
               )}
             </div>
           </div>

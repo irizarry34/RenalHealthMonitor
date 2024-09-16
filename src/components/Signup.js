@@ -98,7 +98,7 @@ export default function Signup() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-card shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4 text-primary">Sign Up</h2>
+      <h2 className="text-2xl font-bold mb-4 text-secondary">Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-textPrimary">Email</label>
@@ -222,7 +222,7 @@ export default function Signup() {
         </div>
         <button
           type="submit"
-          className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition"
+          className="w-full bg-secondary text-white py-2 px-4 rounded-md hover:bg-bloodRedOrgange transition"
         >
           Sign Up
         </button>

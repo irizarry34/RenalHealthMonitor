@@ -29,8 +29,8 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-card shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4 text-primary">Login</h2>
+    <div className="max-w-md mx-auto p-6 bg-card shadow-lg rounded-lg mt-[3rem]">
+      <h2 className="text-2xl font-bold mb-4 text-secondary">Login:</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-textPrimary">Email</label>
@@ -56,9 +56,9 @@ export default function Login() {
         </div>
         <button
           type="submit"
-          className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition"
+          className="w-full bg-secondary text-white py-2 px-4 rounded-md hover:bg-bloodRedOrgange transition"
         >
-          Log In
+          Login
         </button>
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </form>
