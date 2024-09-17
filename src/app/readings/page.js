@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { useRouter } from 'next/navigation';  // Importar el hook para redireccionar
+import { useRouter } from 'next/navigation';
 
 export default function Readings() {
   const [glucose, setGlucose] = useState('');
@@ -11,10 +11,26 @@ export default function Readings() {
   const [sex, setSex] = useState('M');
   const [notes, setNotes] = useState('');
   const [gfr, setGfr] = useState(null);
-  const [userId, setUserId] = useState(null);  // Estado para almacenar el user_id
-  const router = useRouter();  // Para redirigir si no hay sesión
+  const [userId, setUserId] = useState(null);
+  const [glucoseData, setGlucoseData] = useState([]);
+  const router = useRouter();
 
-  // Obtener el usuario autenticado
+  const fetchGlucoseData = async () => {
+    if (!userId) return;
+
+    const { data, error } = await supabase
+      .from('analytes_readings')
+      .select('created_at, glucose_level')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching glucose data:', error);
+    } else {
+      setGlucoseData(data);
+    }
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -23,21 +39,20 @@ export default function Readings() {
         return;
       }
       if (!session) {
-        router.push('/login'); // Redirigir al login si no hay sesión
+        router.push('/login');
       } else {
-        setUserId(session.user.id); // Guardar el user_id en el estado
+        setUserId(session.user.id);
       }
     };
 
     fetchUser();
   }, [router]);
 
-  // Calcular el GFR
-  const calculateGFR = (creatinine, age, sex) => {
-    let k = sex === 'M' ? 0.9 : 0.7;
-    let e = sex === 'M' ? 1.0 : 0.7;
-    return 141 * Math.min(creatinine / k, 1) ** e * Math.max(creatinine / k, 1) ** -1.209 * 0.993 ** age * (sex === 'M' ? 1 : 0.742);
-  };
+  useEffect(() => {
+    if (userId) {
+      fetchGlucoseData();
+    }
+  }, [userId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,17 +68,17 @@ export default function Readings() {
       .from('analytes_readings')
       .insert([
         {
-          user_id: userId,  // Insertar el user_id del usuario autenticado
+          user_id: userId,
           glucose_level: glucose,
           creatinine_level: creatinine,
           age: age,
           sex: sex,
           notes: notes,
           gfr: calculatedGfr,
-          glucose_reference_min: 70,  // Valor mínimo de referencia para glucosa
-          glucose_reference_max: 100, // Valor máximo de referencia para glucosa
-          creatinine_reference_max: 1.2, // Valor máximo de referencia
-          creatinine_reference_min: 0.6, // Valor mínimo de referencia
+          glucose_reference_min: 70,
+          glucose_reference_max: 100,
+          creatinine_reference_max: 1.2,
+          creatinine_reference_min: 0.6,
         }
       ]);
 
@@ -73,69 +88,94 @@ export default function Readings() {
     } else {
       setGfr(calculatedGfr);
       alert('Datos guardados exitosamente');
+      fetchGlucoseData();
     }
   };
 
+  const calculateGFR = (creatinine, age, sex) => {
+    if (!creatinine) return null;
+    
+    let k = sex === 'M' ? 0.9 : 0.7;
+    let e = sex === 'M' ? 1.0 : 0.7;
+    let gfrValue = 141 * Math.min(creatinine / k, 1) ** e * Math.max(creatinine / k, 1) ** -1.209 * 0.993 ** age * (sex === 'M' ? 1 : 0.742);
+    
+    return gfrValue > 90 ? '>90' : gfrValue.toFixed(2);
+  };
+
+  const handleGenerateChart = () => {
+    router.push('/glucose-chart-page'); // Redirige a la página de la gráfica
+  };
+  
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-[-15rem]">
-        <h1 className="text-2xl mb-4 text-center">Registro de Lecturas</h1>
+    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-4">
+        <h1 className="text-2xl mb-4 text-center">Register Readings</h1>
         <form onSubmit={handleSubmit}>
+          {/* Campos del formulario */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Glucosa:</label>
+            <label className="block text-sm font-medium text-gray-700">Glucose (70 - 100 mg/dL):</label>
             <input
               type="number"
               value={glucose}
               onChange={(e) => setGlucose(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              placeholder="Nivel de glucosa"
+              placeholder="Glucose level"
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Creatinina:</label>
+            <label className="block text-sm font-medium text-gray-700">Creatinine (0.6 - 1.2 mg/dL):</label>
             <input
               type="number"
               value={creatinine}
               onChange={(e) => setCreatinine(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              placeholder="Nivel de creatinina"
+              placeholder="Creatinine level (optional)"
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Edad:</label>
+            <label className="block text-sm font-medium text-gray-700">Age:</label>
             <input
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              placeholder="Edad"
+              placeholder="Age"
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Género:</label>
+            <label className="block text-sm font-medium text-gray-700">Gender:</label>
             <select
               value={sex}
               onChange={(e) => setSex(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
             >
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
-              <option value="U">No binario / Género diverso</option>
+              <option value="S">Select an option</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="U">Non-binary / Diverse Gender</option>
             </select>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Comentarios:</label>
+            <label className="block text-sm font-medium text-gray-700">Comments:</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              placeholder="Notas adicionales"
+              placeholder="Additional notes"
             />
           </div>
-          <div className="mb-4 flex justify-center">
-            <button type="submit" className="bg-bloodRed hover:bg-bloodRedOrgange text-white px-4 py-2 rounded">Guardar Lectura</button>
+          <div className="mb-4 flex justify-between">
+            <button type="submit" className="bg-bloodRed hover:bg-bloodRedOrange text-white px-4 py-2 rounded">Save Reading</button>
+            <button
+              type="button"
+              onClick={handleGenerateChart}
+              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              Generate Chart
+            </button>
           </div>
-          {gfr && <div className="mt-4 text-center">GFR Calculado: {gfr.toFixed(2)}</div>}
+          {gfr && <div className="mt-4 text-center bg-gray-100 p-2 rounded-md">Calculated GFR: {gfr}</div>}
         </form>
       </div>
     </div>
