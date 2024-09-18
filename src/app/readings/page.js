@@ -14,7 +14,7 @@ export default function Readings() {
   const [userId, setUserId] = useState(null);
   const [glucoseData, setGlucoseData] = useState([]);
   const [creatinineData, setCreatinineData] = useState([]);
-  const [chartType, setChartType] = useState('glucose'); // Estado para manejar el tipo de gráfico
+  const [chartType, setChartType] = useState('glucose');
   const router = useRouter();
 
   const fetchGlucoseData = async () => {
@@ -76,16 +76,26 @@ export default function Readings() {
       return;
     }
 
-    const calculatedGfr = calculateGFR(creatinine, age, sex);
+    // Convertir los valores a número y validar
+    const glucoseNum = glucose !== '' ? parseFloat(glucose) : null;
+    const creatinineNum = creatinine !== '' ? parseFloat(creatinine) : null;
+    const ageNum = age !== '' ? parseInt(age) : null;
+
+    if (!isValidNumber(glucoseNum) || !isValidNumber(creatinineNum) || !isValidNumber(ageNum)) {
+      alert('Por favor, ingrese valores válidos numéricos positivos.');
+      return;
+    }
+
+    const calculatedGfr = calculateGFR(creatinineNum, ageNum, sex);
 
     const { data, error } = await supabase
       .from('analytes_readings')
       .insert([
         {
           user_id: userId,
-          glucose_level: glucose,
-          creatinine_level: creatinine,
-          age: age,
+          glucose_level: glucoseNum,
+          creatinine_level: creatinineNum,
+          age: ageNum,
           sex: sex,
           notes: notes,
           gfr: calculatedGfr,
@@ -105,6 +115,10 @@ export default function Readings() {
       fetchGlucoseData();
       fetchCreatinineData();
     }
+  };
+
+  const isValidNumber = (value) => {
+    return value === null || (typeof value === 'number' && !isNaN(value) && value >= 0);
   };
 
   const calculateGFR = (creatinine, age, sex) => {
@@ -128,7 +142,6 @@ export default function Readings() {
       <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-6">
         <h1 className="text-2xl font-semibold mb-6 text-center">Register Readings</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Campos del formulario */}
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Glucose (70 - 100 mg/dL):</label>
@@ -203,7 +216,6 @@ export default function Readings() {
               >
                 Generate Chart
               </button>
-
             </div>
             <button
               type="submit"

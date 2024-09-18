@@ -1,11 +1,13 @@
 "use client"; // Asegúrate de que este archivo sea un componente de cliente
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Importamos useRouter para la redirección
 import { supabase } from '../supabaseClient';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // Confirmación de contraseña
   const [username, setUsername] = useState(''); // Nombre de usuario
   const [firstName, setFirstName] = useState(''); // Nombre
   const [lastName, setLastName] = useState(''); // Primer apellido
@@ -17,6 +19,8 @@ export default function Signup() {
   const [postalCode, setPostalCode] = useState(''); // Código postal
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  
+  const router = useRouter(); // Inicializamos useRouter para la redirección
 
   // Función para verificar si el perfil de usuario ya existe en la tabla profiles
   const checkUsernameExists = async (username) => {
@@ -41,6 +45,12 @@ export default function Signup() {
     // Verificar si se ha ingresado un nombre de usuario
     if (!username) {
       setError("Por favor, ingresa un nombre de usuario.");
+      return;
+    }
+
+    // Verificar si las contraseñas coinciden
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden. Por favor, inténtalo de nuevo.");
       return;
     }
 
@@ -93,6 +103,25 @@ export default function Signup() {
       setError(`Error al insertar el perfil: ${profileError.message}`);
     } else {
       setSuccess('Registro exitoso');
+      
+      // Limpiar el formulario
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setUsername('');
+      setFirstName('');
+      setLastName('');
+      setSecondLastName('');
+      setDob('');
+      setCountry('');
+      setTown('');
+      setAddress('');
+      setPostalCode('');
+
+      // Redirigir a la página de Login después de un pequeño retraso
+      setTimeout(() => {
+        router.push('/login'); // Redirigir a la página de login
+      }, 2000); // Puedes ajustar el tiempo de retraso según sea necesario
     }
   };
 
@@ -111,13 +140,24 @@ export default function Signup() {
             className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-textPrimary">Password</label>
           <input
             type="password"
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-textPrimary">Confirm Password</label>
+          <input
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
           />
