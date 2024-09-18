@@ -3,17 +3,18 @@ import { supabase } from '../supabaseClient'; // Ajusta la ruta según tu estruc
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import { Button } from 'react-bootstrap'; // O cualquier otro componente de botón que estés usando
 
-const GlucoseDataContainer = () => {
-  const [glucoseData, setGlucoseData] = useState([]);
+const CreatinineDataContainer = () => {
+  const [creatinineData, setCreatinineData] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate(); // Obtén el hook de navegación
 
   useEffect(() => {
-    const fetchGlucoseData = async () => {
+    // Función para obtener los datos desde la tabla analytes_readings en Supabase
+    const fetchCreatinineData = async () => {
       try {
         const { data, error } = await supabase
           .from('analytes_readings') // Nombre de la tabla
-          .select('glucose_level, created_at') // Selecciona los campos necesarios
+          .select('creatinine_level, gfr, created_at') // Selecciona los campos necesarios
           .order('created_at', { ascending: true }); // Ordena por fecha ascendente (opcional)
 
         if (error) {
@@ -22,23 +23,27 @@ const GlucoseDataContainer = () => {
           return;
         }
 
+        // Mapea los datos para crear un formato adecuado para el gráfico
         const formattedData = data.map(entry => ({
-          glucoseLevel: entry.glucose_level,  // Nivel de glucosa
+          creatinineLevel: entry.creatinine_level, // Nivel de creatinina
+          gfr: entry.gfr 
+            ? (typeof entry.gfr === 'string' && entry.gfr.startsWith('>') ? 90 : parseFloat(entry.gfr))
+            : null, // Maneja el caso cuando gfr es null
           date: new Date(entry.created_at).toLocaleDateString(), // Fecha en formato legible
         }));
 
-        setGlucoseData(formattedData); // Actualiza el estado con los datos formateados
+        setCreatinineData(formattedData); // Actualiza el estado con los datos formateados
       } catch (error) {
         setErrorMessage('Error al obtener los datos.');
         console.error('Error al obtener los datos:', error);
       }
     };
 
-    fetchGlucoseData(); // Llama a la función para obtener los datos
+    fetchCreatinineData(); // Llama a la función para obtener los datos
   }, []);
 
   const handleGenerateChart = () => {
-    navigate('/GlucoseChart', { state: { glucoseData } }); // Redirige con los datos
+    navigate('/CreatinineChartPage', { state: { creatinineData } }); // Redirige con los datos
   };
 
   return (
@@ -54,4 +59,4 @@ const GlucoseDataContainer = () => {
   );
 };
 
-export default GlucoseDataContainer;
+export default CreatinineDataContainer;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import annotationPlugin from 'chartjs-plugin-annotation'; // Importa el plugin de anotaciones
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 // Registra los componentes necesarios para Chart.js
 ChartJS.register(
@@ -15,27 +15,26 @@ ChartJS.register(
   annotationPlugin // Registra el plugin de anotaciones
 );
 
-const GlucoseChart = ({ glucoseData }) => {
+const GlucoseChart = ({ data }) => {
   // Verifica que los datos se reciban correctamente
-  console.log('Datos de glucosa recibidos en GlucoseChart:', glucoseData);
+  console.log('Datos de glucosa recibidos en GlucoseChart:', data);
 
-  // Valida que los datos no sean nulos o indefinidos
-  if (!glucoseData || glucoseData.length === 0) {
+  if (!data || data.length === 0) {
     return <p>No hay datos de glucosa disponibles.</p>;
   }
 
   // Configura los datos del gráfico
   const chartData = {
-    labels: glucoseData.map(entry => entry.date), // Fechas de registro
+    labels: data.map(entry => entry.date),
     datasets: [
       {
         label: 'Glucose Levels (mg/dL)',
-        data: glucoseData.map(entry => entry.glucoseLevel), // Valores de glucosa
+        data: data.map(entry => entry.glucoseLevel),
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         borderWidth: 2,
-        pointBackgroundColor: 'rgba(75, 192, 192, 1)', // Color de los puntos
-        fill: true, // Relleno debajo de la línea
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        fill: true,
       },
     ],
   };
@@ -51,7 +50,7 @@ const GlucoseChart = ({ glucoseData }) => {
         },
         ticks: {
           autoSkip: true,
-          maxTicksLimit: 10, // Limita el número de ticks en el eje X
+          maxTicksLimit: 10,
         },
       },
       y: {
@@ -59,9 +58,9 @@ const GlucoseChart = ({ glucoseData }) => {
           display: true,
           text: 'Glucose Level (mg/dL)',
         },
-        beginAtZero: false, // No comienza desde 0
-        min: Math.min(...glucoseData.map(entry => entry.glucoseLevel)) - 10, // Valor mínimo dinámico del eje Y
-        max: Math.max(...glucoseData.map(entry => entry.glucoseLevel)) + 10, // Valor máximo dinámico del eje Y
+        beginAtZero: false,
+        min: Math.min(...data.map(entry => entry.glucoseLevel)) - 10,
+        max: Math.max(...data.map(entry => entry.glucoseLevel)) + 10,
       },
     },
     plugins: {
