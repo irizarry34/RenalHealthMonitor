@@ -58,7 +58,7 @@ const CreatinineChartPage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
-      <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-4">
+      <div className="p-4 max-w-6xl w-full bg-white shadow-md rounded-lg mt-4"> {/* Cambia max-w-lg a max-w-6xl */}
         <h1 className="text-2xl mb-4 text-center">Creatinine Chart</h1>
         {creatinineData.length > 0 ? (
           <CreatinineChart creatinineData={creatinineData} />

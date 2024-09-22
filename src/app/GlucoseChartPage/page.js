@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import GlucoseChart from '../../components/GlucoseChart';
+import Head from 'next/head';
 
 const GlucoseChartPage = () => {
   const [session, setSession] = useState(null);
@@ -34,7 +35,7 @@ const GlucoseChartPage = () => {
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: true });
 
-      console.log('Fetched Data:', data); // Debugging line
+      console.log('Fetched Data:', data);
 
       if (dataError) {
         setError('Error fetching glucose data.');
@@ -53,7 +54,7 @@ const GlucoseChartPage = () => {
         date: new Date(entry.created_at).toLocaleDateString(),
       }));
 
-      console.log('Formatted Glucose Data:', formattedData); // Debugging line
+      console.log('Formatted Glucose Data:', formattedData);
 
       setGlucoseData(formattedData);
       setLoading(false);
@@ -67,6 +68,9 @@ const GlucoseChartPage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      <Head>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+      </Head>
       <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-4">
         <h1 className="text-2xl mb-4 text-center">Glucose Chart</h1>
         {glucoseData.length > 0 ? (
