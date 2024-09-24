@@ -77,11 +77,11 @@ export default function Readings() {
     }
 
     // Convertir los valores a número y validar
-    const glucoseNum = glucose !== '' ? parseFloat(glucose) : null;
+    const glucoseNum = glucose !== '' ? parseFloat(glucose) : null; // Glucosa opcional
     const creatinineNum = creatinine !== '' ? parseFloat(creatinine) : null;
     const ageNum = age !== '' ? parseInt(age) : null;
 
-    if (!isValidNumber(glucoseNum) || !isValidNumber(creatinineNum) || !isValidNumber(ageNum)) {
+    if (!isValidNumber(creatinineNum) || !isValidNumber(ageNum)) {
       alert('Por favor, ingrese valores válidos numéricos positivos.');
       return;
     }
@@ -93,14 +93,14 @@ export default function Readings() {
       .insert([
         {
           user_id: userId,
-          glucose_level: glucoseNum,
+          glucose_level: glucoseNum, // Se puede insertar como null
           creatinine_level: creatinineNum,
           age: ageNum,
           sex: sex,
           notes: notes,
           gfr: calculatedGfr,
-          glucose_reference_min: 70,
-          glucose_reference_max: 100,
+          glucose_reference_min: glucoseNum !== null ? 70 : null,  // Solo si se proporciona un valor de glucosa
+          glucose_reference_max: glucoseNum !== null ? 100 : null,
           creatinine_reference_max: 1.2,
           creatinine_reference_min: 0.6,
         }
@@ -157,7 +157,7 @@ export default function Readings() {
                 value={glucose}
                 onChange={(e) => setGlucose(e.target.value)}
                 className="mt-1 block w-full p-1 border border-gray-300 rounded-md shadow-sm"
-                placeholder="Glucose level"
+                placeholder="Glucose level (optional)"
               />
             </div>
             <div>
