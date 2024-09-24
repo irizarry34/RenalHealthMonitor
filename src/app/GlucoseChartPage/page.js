@@ -13,55 +13,72 @@ const GlucoseChartPage = () => {
 
   useEffect(() => {
     const fetchSessionAndData = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('Session:', session);
-      console.log('Session Error:', sessionError);
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        setError('Error obteniendo la sesión.');
+        if (sessionError || !sessionData.session) {
+          throw new Error('Error obteniendo la sesión. Inicia sesión para ver los datos.');
+        }
+
+        setSession(sessionData.session);
+
+        const { data, error: dataError } = await supabase
+          .from('analytes_readings')
+          .select('id, created_at, glucose_level')
+          .eq('user_id', sessionData.session.user.id)
+          .order('created_at', { ascending: true });
+
+        if (dataError) {
+          throw new Error('Error al obtener los datos de glucosa.');
+        }
+
+        if (data.length === 0) {
+          throw new Error('No hay datos de glucosa disponibles.');
+        }
+
+        const formattedData = data.map(entry => ({
+          id: entry.id,
+          glucoseLevel: entry.glucose_level,
+          date: new Date(entry.created_at).toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        }));
+
+        setGlucoseData(formattedData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      if (!session) {
-        setError('No estás autenticado. Inicia sesión para ver esta página.');
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: dataError } = await supabase
-        .from('analytes_readings')
-        .select('created_at, glucose_level')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true });
-
-      console.log('Fetched Data:', data);
-
-      if (dataError) {
-        setError('Error fetching glucose data.');
-        setLoading(false);
-        return;
-      }
-
-      if (data.length === 0) {
-        setError('No hay datos de glucosa para generar la gráfica.');
-        setLoading(false);
-        return;
-      }
-
-      const formattedData = data.map(entry => ({
-        glucoseLevel: entry.glucose_level,
-        date: new Date(entry.created_at).toLocaleDateString(),
-      }));
-
-      console.log('Formatted Glucose Data:', formattedData);
-
-      setGlucoseData(formattedData);
-      setLoading(false);
     };
 
     fetchSessionAndData();
   }, []);
+
+  // Función para eliminar una entrada de glucosa
+  const removeGlucoseEntry = async (id) => {
+    const confirmation = window.confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción es permanente.');
+    if (!confirmation) return;
+
+    try {
+      const { error } = await supabase
+        .from('analytes_readings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw new Error(error.message);
+
+      setGlucoseData(prevData => prevData.filter(entry => entry.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar la entrada:', error.message);
+      alert('Hubo un error al eliminar la entrada. Por favor, inténtalo de nuevo.');
+    }
+  };
 
   if (loading) return <p>Cargando...</p>;
   if (error) return <p>{error}</p>;
@@ -72,9 +89,9 @@ const GlucoseChartPage = () => {
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
       </Head>
       <div className="p-4 max-w-lg w-full bg-white shadow-md rounded-lg mt-4">
-        <h1 className="text-2xl mb-4 text-center">Glucose Chart</h1>
+        <u><h1 className="text-2xl mb-4 text-center"><strong>GLUCOSE</strong></h1></u>
         {glucoseData.length > 0 ? (
-          <GlucoseChart data={glucoseData} />
+          <GlucoseChart data={glucoseData} setData={setGlucoseData} onRemoveEntry={removeGlucoseEntry} />
         ) : (
           <p>No hay datos de glucosa para mostrar.</p>
         )}

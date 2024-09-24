@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import { supabase } from '../supabaseClient';
 
-// Register necessary components for Chart.js
+// Register the necessary components for Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -12,29 +13,40 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  Filler,
   annotationPlugin
 );
 
-const CreatinineGFRCharts = ({ creatinineData }) => {
-  const [hoveredIndex, setHoveredIndex] = useState(null); // State to track hovered index
-  const [isDescending, setIsDescending] = useState(true); // State to track sorting order
-  const [filteredData, setFilteredData] = useState(creatinineData); // State for filtered data
+const formatDateTime = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }).replace(',', ''); // Remove the comma between date and time
+};
+
+const CreatinineChart = ({ creatinineData }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [isDescending, setIsDescending] = useState(true);
+  const [filteredData, setFilteredData] = useState(creatinineData);
 
   if (!filteredData || filteredData.length === 0) {
     return <p>No creatinine data available.</p>;
   }
 
-  // Toggle sorting order on button click
   const toggleOrder = () => {
     setIsDescending(!isDescending);
   };
 
-  // Sort the data by date based on the selected sorting order
   const sortedData = [...filteredData].sort((a, b) =>
     isDescending ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date)
   );
 
-  // Creatinine chart data
   const creatinineChartData = {
     labels: sortedData.map(entry => entry.date),
     datasets: [
@@ -46,37 +58,38 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
         borderWidth: 2,
         pointBackgroundColor: sortedData.map((entry, index) =>
           hoveredIndex === index
-            ? 'rgba(255, 206, 86, 1)' // Yellow for highlighted point
+            ? 'rgba(255, 206, 86, 1)'
             : entry.creatinineLevel < 0.8 || entry.creatinineLevel > 1.2
-              ? 'rgba(255, 99, 132, 1)' // Red for out of range
-              : 'rgba(75, 192, 192, 1)' // Blue/green for in range
+              ? 'rgba(255, 99, 132, 1)'
+              : 'rgba(75, 192, 192, 1)'
         ),
-        pointRadius: sortedData.map((entry, index) => (hoveredIndex === index ? 10 : 5)), // Increase point size when highlighted
+        pointRadius: sortedData.map((entry, index) => (hoveredIndex === index ? 10 : 5)),
         fill: true,
       },
     ],
   };
 
-  // GFR chart data
   const gfrChartData = {
     labels: sortedData.map(entry => entry.date),
     datasets: [
       {
         label: 'GFR (ml/min/1.73 m²)',
-        data: sortedData.map(entry => (entry.gfr !== null && entry.gfr !== undefined ? entry.gfr : 0)), // Handle null/undefined GFR values
+        data: sortedData.map(entry => (entry.gfr !== null && entry.gfr !== undefined ? entry.gfr : 0)),
         borderColor: 'rgba(54, 162, 235, 1)',
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
         borderWidth: 2,
         pointBackgroundColor: sortedData.map((entry, index) =>
-          hoveredIndex === index ? 'rgba(255, 206, 86, 1)' : 'rgba(54, 162, 235, 1)' // Yellow when highlighted
+          hoveredIndex === index ? 'rgba(255, 206, 86, 1)' : 'rgba(54, 162, 235, 1)'
         ),
-        pointRadius: sortedData.map((entry, index) => (hoveredIndex === index ? 10 : 5)), // Increase point size when highlighted
+        pointRadius: sortedData.map((entry, index) => (hoveredIndex === index ? 10 : 5)),
         fill: true,
       },
     ],
   };
 
-  // Common chart options
+  const normalRangeMax = Math.max(1.2, ...sortedData.map(entry => entry.creatinineLevel));
+  const creatinineYAxisMax = normalRangeMax > 1.2 ? Math.ceil(normalRangeMax * 20) / 20 : 2;
+
   const commonOptions = {
     responsive: true,
     scales: {
@@ -90,6 +103,18 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
           maxTicksLimit: 10,
         },
       },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Creatinine Level (mg/dL)',
+        },
+        min: 0.75,
+        max: creatinineYAxisMax,
+        ticks: {
+          stepSize: 0.05,
+        },
+      },
     },
     plugins: {
       annotation: {
@@ -98,10 +123,10 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
             type: 'line',
             yMin: 1.2,
             yMax: 1.2,
-            borderColor: 'rgba(255, 99, 132, 0.8)', // Red for Max Reference
+            borderColor: 'rgba(255, 99, 132, 0.8)',
             borderWidth: 2,
             label: {
-              content: 'Max Reference (1.2)',
+              content: 'Maximum Reference (1.2)',
               enabled: true,
               position: 'left',
               backgroundColor: 'rgba(255, 99, 132, 0.8)',
@@ -112,10 +137,10 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
             type: 'line',
             yMin: 0.8,
             yMax: 0.8,
-            borderColor: 'rgba(54, 162, 235, 0.8)', // Blue for Min Reference
+            borderColor: 'rgba(54, 162, 235, 0.8)',
             borderWidth: 2,
             label: {
-              content: 'Min Reference (0.8)',
+              content: 'Minimum Reference (0.8)',
               enabled: true,
               position: 'left',
               backgroundColor: 'rgba(54, 162, 235, 0.8)',
@@ -127,48 +152,45 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
     },
   };
 
-  // Function to remove an entry based on type
-  const removeEntry = (index, type) => {
-    const newFilteredData = filteredData.filter((entry, i) => {
-      if (type === 'creatinine') {
-        return i !== index; // Remove creatinine entry
-      } else if (type === 'gfr') {
-        return entry.gfr !== filteredData[index].gfr; // Remove GFR entry based on its value
+  const removeEntry = async (id) => {
+    const entryToRemove = filteredData.find(entry => entry.id === id);
+
+    const confirmation = window.confirm(`Are you sure you want to permanently delete this entry?`);
+    if (!confirmation) return;
+
+    try {
+      if (!entryToRemove.id) {
+        throw new Error('Undefined entry ID');
       }
-      return true;
-    });
-    setFilteredData(newFilteredData);
+
+      const { error } = await supabase
+        .from('analytes_readings')
+        .delete()
+        .eq('id', entryToRemove.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newFilteredData = filteredData.filter(entry => entry.id !== id);
+      setFilteredData(newFilteredData);
+    } catch (error) {
+      console.error('Error deleting entry:', error.message);
+      alert('There was an error deleting the entry. Please try again.');
+    }
   };
 
   return (
     <div className="max-w-6xl mx-auto p-10 rounded-lg shadow-lg bg-white">
-      <h2 className="text-center text-2xl mb-4 font-sans">Creatinine and GFR Levels Over Time</h2>
-
-      {/* Flexbox container to align charts side by side with more space */}
       <div className="flex justify-between">
         {/* Creatinine Chart */}
         <div className="w-1/2 pr-4">
-          <Line
-            data={creatinineChartData}
-            options={{
-              ...commonOptions,
-              scales: {
-                ...commonOptions.scales,
-                y: {
-                  title: {
-                    display: true,
-                    text: 'Creatinine Level (mg/dL)',
-                  },
-                  beginAtZero: true,
-                  min: 0,
-                  max: 20, // Máximo ajustado a 20
-                  ticks: {
-                    stepSize: 1, // Ajuste de stepSize a 1
-                  },
-                },
-              },
-            }}
-          />
+          <Line data={creatinineChartData} options={commonOptions} />
+          <div className="mt-2 p-1 bg-mintGreendark text-white rounded shadow-md text-center text-xs w-48 mx-auto">
+            <u><strong>Creatinine Reference Values:</strong><br /></u>
+            0.8 - 1.2 (Men)<br />
+            0.6 - 1.2 (Women)
+          </div>
         </div>
 
         {/* GFR Chart */}
@@ -177,6 +199,11 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
             data={gfrChartData}
             options={{
               ...commonOptions,
+              plugins: {
+                annotation: {
+                  annotations: {}, // No reference lines
+                },
+              },
               scales: {
                 ...commonOptions.scales,
                 y: {
@@ -184,9 +211,8 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
                     display: true,
                     text: 'GFR (ml/min/1.73 m²)',
                   },
-                  beginAtZero: true,
                   min: 0,
-                  max: 100, // Fixed maximum for GFR
+                  max: Math.max(...sortedData.map(entry => entry.gfr || 0)) + 10,
                   ticks: {
                     stepSize: 10,
                   },
@@ -194,66 +220,67 @@ const CreatinineGFRCharts = ({ creatinineData }) => {
               },
             }}
           />
+          <div className="mt-2 p-1 bg-mintGreendark text-white rounded shadow-md text-center text-xs w-48 mx-auto">
+            <u><strong>GFR Reference Values:</strong><br /></u>
+            Normal function: &ge; 90<br />
+            Mild decrease: 60-89<br />
+            Moderate decrease: 30-59<br />
+            Severe decrease: 15-29<br />
+            Renal failure: &lt; 15
+          </div>
         </div>
       </div>
 
-      {/* Sorting button */}
       <div className="text-center my-4">
         <button
+          className="bg-mintGreendark hover:bg-gradient-to-r from-bloodRedOrgange to-mintGreen text-white font-bold py-2 px-4 rounded"
           onClick={toggleOrder}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
         >
-          {isDescending ? 'Show Oldest First' : 'Show Newest First'}
+          {isDescending ? 'Sort Ascending' : 'Sort Descending'}
         </button>
       </div>
 
-      {/* Data list section */}
-      <div className="mt-5 p-3 rounded bg-gray-100 border border-gray-300">
-        <h3 className="text-lg mb-2 font-sans text-center">Creatinine and GFR Levels History</h3>
-        <div className="overflow-auto max-h-96">
-          <ul className="divide-y divide-gray-300">
-            {sortedData.map((entry, index) => (
-              <li
-                key={index}
-                className="py-4 px-5 hover:bg-gray-100 transition duration-300 ease-in-out"
-                onMouseEnter={() => setHoveredIndex(index)}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300 shadow-md mt-4 rounded-lg overflow-hidden">
+          <thead className="bg-mintGreendark text-white uppercase text-sm leading-normal">
+            <th colSpan="4" className="py-3 px-4 text-center text-1xl font-sans bg-mintGreendark text-white">
+              CREATININE RECORDS AND GFR CALCULATION:
+            </th>
+            <tr>
+              <th className="py-3 px-4 text-left">Date and Time</th>
+              <th className="py-3 px-4 text-left">Creatinine (mg/dL)</th>
+              <th className="py-3 px-4 text-left">GFR (ml/min/1.73 m²)</th>
+              <th className="py-3 px-4 text-center">Delete</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-600 text-sm font-light">
+            {sortedData.map((entry) => (
+              <tr
+                key={entry.id}
+                onMouseEnter={() => setHoveredIndex(entry.id)}
                 onMouseLeave={() => setHoveredIndex(null)}
+                className={`border-b border-gray-200 hover:bg-gray-50 transition duration-200 ${hoveredIndex === entry.id ? 'bg-gray-200' : ''}`}
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-700">Date: {new Date(entry.date).toLocaleDateString()}</h4>
-                    <p className="text-sm text-gray-500">
-                      Creatinine: <span className={`font-medium ${entry.creatinineLevel < 0.8 || entry.creatinineLevel > 1.2 ? 'text-red-500' : 'text-green-600'}`}>{entry.creatinineLevel} mg/dL</span>
-                      <button
-                        onClick={() => removeEntry(index, 'creatinine')}
-                        className="ml-2 text-red-600 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </p>
-                    {entry.gfr && (
-                      <p className="text-sm text-gray-500">
-                        GFR: <span className="font-medium text-blue-600">{entry.gfr} ml/min/1.73 m²</span>
-                        <button
-                          onClick={() => removeEntry(index, 'gfr')}
-                          className="ml-2 text-red-600 hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-gray-400">Entry #{index + 1}</span>
-                  </div>
-                </div>
-              </li>
+                <td className="py-3 px-4">{formatDateTime(entry.date)}</td>
+                <td className={`py-3 px-4 ${entry.creatinineLevel < 0.8 || entry.creatinineLevel > 1.2 ? 'text-red-500' : 'text-green-500'}`}>
+                  {entry.creatinineLevel}
+                </td>
+                <td className="py-3 px-4">{entry.gfr}</td>
+                <td className="py-3 px-4 text-center">
+                  <button
+                    className="bg-bloodRed hover:bg-bloodRedOrgange text-white font-bold py-1 px-2 rounded transition duration-200"
+                    onClick={() => removeEntry(entry.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
             ))}
-          </ul>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
-export default CreatinineGFRCharts;
+export default CreatinineChart;

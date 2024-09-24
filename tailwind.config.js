@@ -17,8 +17,15 @@ module.exports = {
         bloodRed: '#C8102E', // Rojo sangre
         bloodRedOrgange: '#D74F3F', // Rojo sangre tirando para anaranjado
       },
-      fontFamily: {
-        sans: ['Poppins', 'Montserrat', 'Roboto', 'sans-serif'], // Fuentes modernas y profesionales
+      keyframes: {
+        lightEffect: {
+          '0%': { boxShadow: '0 0 0 0 rgba(0, 191, 174, 1)' },
+          '50%': { boxShadow: '0 0 0 20px rgba(0, 191, 174, 0)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(0, 191, 174, 1)' },
+        },
+      },
+      animation: {
+        lightEffect: 'lightEffect 2s infinite', // Duración de la animación
       },
     },
   },

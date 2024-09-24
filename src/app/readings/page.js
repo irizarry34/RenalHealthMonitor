@@ -114,6 +114,13 @@ export default function Readings() {
       alert('Datos guardados exitosamente');
       fetchGlucoseData();
       fetchCreatinineData();
+
+      // Restablecer los campos a valores en blanco o predeterminados
+      setGlucose('');      // Vaciar campo de glucosa
+      setCreatinine('');   // Vaciar campo de creatinina
+      setAge('');          // Vaciar campo de edad
+      setSex('M');         // Restablecer el sexo al valor predeterminado (M)
+      setNotes('');        // Vaciar el campo de notas
     }
   };
 
@@ -212,7 +219,7 @@ export default function Readings() {
               <button
                 type="button"
                 onClick={handleGenerateChart}
-                className="ml-4 bg-gradient-to-r from-bloodRedOrgange to-mintGreen hover:from-bloodRedOrange hover:to-mintGreen text-white px-4 py-2 rounded-lg shadow-md"
+                className="ml-4 bg-gradient-to-r from-bloodRedOrgange to-mintGreen hover:from-bloodRedOrgange hover:to-mintGreen text-white px-4 py-2 rounded-lg shadow-md"
               >
                 Generate Chart
               </button>
@@ -224,7 +231,13 @@ export default function Readings() {
               Save Reading
             </button>
           </div>
-          {gfr && <div className="mt-4 text-center bg-gray-100 p-3 rounded-md shadow-md">Calculated GFR: {gfr}</div>}
+          {gfr && (
+            <div className="mt-4 w-full flex justify-center">
+              <div className="bg-gradient-to-r from-bloodRedOrgange to-mintGreen p-3 rounded-md shadow-md animate-lightEffect border-2 border-transparent">
+                Calculated GFR: {gfr}
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
