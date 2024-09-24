@@ -16,6 +16,7 @@
     "react": "latest",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "latest",
+    "rsuite": "^5.70.3",
     "tailwindcss": "^3.0.0"
   },
   "devDependencies": {
