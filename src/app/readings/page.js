@@ -77,12 +77,13 @@ export default function Readings() {
     }
 
     // Convertir los valores a número y validar
-    const glucoseNum = glucose !== '' ? parseFloat(glucose) : null; // Glucosa opcional
-    const creatinineNum = creatinine !== '' ? parseFloat(creatinine) : null;
+    const glucoseNum = glucose !== '' ? parseFloat(glucose) : 'Not Taken'; // Glucosa opcional
+    const creatinineNum = creatinine !== '' ? parseFloat(creatinine) : 'Not Taken'; // Creatinina opcional
     const ageNum = age !== '' ? parseInt(age) : null;
 
-    if (!isValidNumber(creatinineNum) || !isValidNumber(ageNum)) {
-      alert('Por favor, ingrese valores válidos numéricos positivos.');
+    // Validar solo edad
+    if (!isValidNumber(ageNum)) {
+      alert('Por favor, ingrese un valor válido para la edad.');
       return;
     }
 
@@ -93,14 +94,14 @@ export default function Readings() {
       .insert([
         {
           user_id: userId,
-          glucose_level: glucoseNum, // Se puede insertar como null
-          creatinine_level: creatinineNum,
+          glucose_level: glucoseNum,
+          creatinine_level: creatinineNum, // Puede ser 'Not Taken' o null
           age: ageNum,
           sex: sex,
           notes: notes,
           gfr: calculatedGfr,
-          glucose_reference_min: glucoseNum !== null ? 70 : null,  // Solo si se proporciona un valor de glucosa
-          glucose_reference_max: glucoseNum !== null ? 100 : null,
+          glucose_reference_min: glucoseNum !== 'Not Taken' ? 70 : null,
+          glucose_reference_max: glucoseNum !== 'Not Taken' ? 100 : null,
           creatinine_reference_max: 1.2,
           creatinine_reference_min: 0.6,
         }
@@ -125,11 +126,11 @@ export default function Readings() {
   };
 
   const isValidNumber = (value) => {
-    return value === null || (typeof value === 'number' && !isNaN(value) && value >= 0);
+    return value === null || value === '' || (typeof value === 'number' && !isNaN(value) && value >= 0);
   };
 
   const calculateGFR = (creatinine, age, sex) => {
-    if (!creatinine) return null;
+    if (creatinine === 'Not Taken') return null; // Manejo de caso 'Not Taken'
 
     let k = sex === 'M' ? 0.9 : 0.7;
     let e = sex === 'M' ? 1.0 : 0.7;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
@@ -21,6 +21,15 @@ const GlucoseChartWithList = ({ data, setData }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [isDescending, setIsDescending] = useState(true);
 
+  // Comprobación de datos al cargar
+  useEffect(() => {
+    if (data && data.length > 0) {
+      console.log('Data loaded:', data);
+    } else {
+      console.warn('No glucose data available or data is not in the expected format.');
+    }
+  }, [data]);
+
   if (!data || data.length === 0) {
     return <p>No glucose data available.</p>;
   }
@@ -34,7 +43,10 @@ const GlucoseChartWithList = ({ data, setData }) => {
   );
 
   const chartData = {
-    labels: sortedData.map(entry => entry.date),
+    labels: sortedData.map(entry => {
+      const date = new Date(entry.date);
+      return isNaN(date) ? 'Invalid Date' : date.toLocaleString();
+    }), // Manejo de errores en la fecha
     datasets: [
       {
         label: 'Glucose Levels (mg/dL)',
@@ -59,7 +71,7 @@ const GlucoseChartWithList = ({ data, setData }) => {
     responsive: true,
     scales: {
       x: {
-        title: { display: true, text: 'Date' },
+        title: { display: true, text: 'Date and Time' },
         ticks: { autoSkip: true, maxTicksLimit: 10 },
       },
       y: {
@@ -149,9 +161,11 @@ const GlucoseChartWithList = ({ data, setData }) => {
       <div className="overflow-x-auto mt-5 rounded-lg border border-gray-300 shadow-md">
         <table className="min-w-full bg-white rounded-lg">
           <thead className="bg-mintGreendark text-white uppercase text-sm leading-normal rounded-t-lg">
-          <th colSpan="4" className="py-3 px-4 text-center text-1xl font-sans bg-mintGreendark text-white">
+            <tr>
+              <th colSpan="3" className="py-3 px-4 text-center text-1xl font-sans bg-mintGreendark text-white">
                 GLUCOSE RECORDS:
               </th>
+            </tr>
             <tr>
               <th className="py-3 px-4 text-left">Date and Time</th>
               <th className="py-3 px-4 text-left">Glucose Level (mg/dL)</th>
@@ -167,8 +181,8 @@ const GlucoseChartWithList = ({ data, setData }) => {
                 className={`border-b border-gray-200 hover:bg-gray-50 transition duration-200 ${hoveredIndex === index ? 'bg-gray-200' : ''}`}
               >
                 <td className="py-3 px-4">{new Date(entry.date).toLocaleString()}</td>
-                <td className={`py-3 px-4 ${entry.glucoseLevel < 70 || entry.glucoseLevel > 100 ? 'text-red-500' : 'text-green-600'}`}>
-                  {entry.glucoseLevel} mg/dL
+                <td className={`py-3 px-4 ${entry.glucoseLevel === null || entry.glucoseLevel === 'Not Taken' ? 'text-gray-400' : entry.glucoseLevel < 70 || entry.glucoseLevel > 100 ? 'text-red-500' : 'text-green-600'}`}>
+                  {entry.glucoseLevel !== null && entry.glucoseLevel !== 'Not Taken' ? `${entry.glucoseLevel} mg/dL` : 'Not Taken'}
                 </td>
                 <td className="py-3 px-4 text-center">
                   <button

@@ -35,6 +35,7 @@ const CreatinineChart = ({ creatinineData }) => {
   const [isDescending, setIsDescending] = useState(true);
   const [filteredData, setFilteredData] = useState(creatinineData);
 
+  // Check if there are data entries and handle the case when there are none
   if (!filteredData || filteredData.length === 0) {
     return <p>No creatinine data available.</p>;
   }
@@ -174,6 +175,7 @@ const CreatinineChart = ({ creatinineData }) => {
 
       const newFilteredData = filteredData.filter(entry => entry.id !== id);
       setFilteredData(newFilteredData);
+      alert('Entry deleted successfully.');
     } catch (error) {
       console.error('Error deleting entry:', error.message);
       alert('There was an error deleting the entry. Please try again.');
@@ -226,26 +228,20 @@ const CreatinineChart = ({ creatinineData }) => {
             Mild decrease: 60-89<br />
             Moderate decrease: 30-59<br />
             Severe decrease: 15-29<br />
-            Renal failure: &lt; 15
+            Kidney failure: &lt; 15
           </div>
         </div>
       </div>
 
-      <div className="text-center my-4">
-        <button
-          className="bg-mintGreendark hover:bg-gradient-to-r from-bloodRedOrgange to-mintGreen text-white font-bold py-2 px-4 rounded"
-          onClick={toggleOrder}
-        >
-          {isDescending ? 'Sort Ascending' : 'Sort Descending'}
-        </button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300 shadow-md mt-4 rounded-lg overflow-hidden">
+      {/* Creatinine Records Table */}
+      <div className="overflow-x-auto mt-10">
+        <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead className="bg-mintGreendark text-white uppercase text-sm leading-normal">
-            <th colSpan="4" className="py-3 px-4 text-center text-1xl font-sans bg-mintGreendark text-white">
-              CREATININE RECORDS AND GFR CALCULATION:
-            </th>
+            <tr>
+              <th colSpan="4" className="py-3 px-4 text-center text-xl font-sans">
+                CREATININE RECORDS AND GFR CALCULATION:
+              </th>
+            </tr>
             <tr>
               <th className="py-3 px-4 text-left">Date and Time</th>
               <th className="py-3 px-4 text-left">Creatinine (mg/dL)</th>
@@ -262,10 +258,10 @@ const CreatinineChart = ({ creatinineData }) => {
                 className={`border-b border-gray-200 hover:bg-gray-50 transition duration-200 ${hoveredIndex === entry.id ? 'bg-gray-200' : ''}`}
               >
                 <td className="py-3 px-4">{formatDateTime(entry.date)}</td>
-                <td className={`py-3 px-4 ${entry.creatinineLevel < 0.8 || entry.creatinineLevel > 1.2 ? 'text-red-500' : 'text-green-500'}`}>
-                  {entry.creatinineLevel}
+                <td className={`py-3 px-4 ${entry.creatinineLevel === null || entry.creatinineLevel === 'Not Taken' ? 'text-gray-500' : (entry.creatinineLevel < 0.8 || entry.creatinineLevel > 1.2 ? 'text-red-500' : 'text-green-500')}`}>
+                  {entry.creatinineLevel === null || entry.creatinineLevel === 'Not Taken' ? 'Not Taken' : entry.creatinineLevel}
                 </td>
-                <td className="py-3 px-4">{entry.gfr}</td>
+                <td className="py-3 px-4">{entry.gfr === null || entry.gfr === 'Not Taken' ? 'Not Taken' : entry.gfr}</td>
                 <td className="py-3 px-4 text-center">
                   <button
                     className="bg-bloodRed hover:bg-bloodRedOrgange text-white font-bold py-1 px-2 rounded transition duration-200"
