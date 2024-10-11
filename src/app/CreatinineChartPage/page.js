@@ -18,7 +18,7 @@ const CreatinineChartPage = () => {
         const { session } = sessionData;
 
         if (!session) {
-          setError('No estás autenticado. Inicia sesión para ver esta página.');
+          setError('You are not authenticated. Please log in to view this page.');
           return;
         }
 
@@ -32,7 +32,7 @@ const CreatinineChartPage = () => {
 
         const filteredData = data.filter(entry => entry.creatinine_level !== null && entry.gfr !== null);
         if (filteredData.length === 0) {
-          setError('No hay datos de creatinina para generar la gráfica.');
+          setError('There is no creatinine data to generate the graph.');
           return;
         }
 
@@ -50,7 +50,7 @@ const CreatinineChartPage = () => {
             minute: '2-digit',
             second: '2-digit',
             hour12: true,
-          }).replace(',', ''), // Eliminar la coma entre fecha y hora
+          }).replace(',', ''), // Remove the comma between date and time
         }));
 
         setCreatinineData(formattedData);
@@ -65,7 +65,7 @@ const CreatinineChartPage = () => {
   }, []);
 
   const removeCreatinineEntry = async (id) => {
-    const confirmation = window.confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción es permanente.');
+    const confirmation = window.confirm('Are you sure you want to delete this record? This action is permanent.');
     if (!confirmation) return;
 
     try {
@@ -80,12 +80,12 @@ const CreatinineChartPage = () => {
 
       setCreatinineData(prevData => prevData.filter(entry => entry.id !== id));
     } catch (error) {
-      console.error('Error al eliminar la entrada:', error.message);
-      alert('Hubo un error al eliminar la entrada. Por favor, inténtalo de nuevo.');
+      console.error('Error deleting the entry:', error.message);
+      alert('There was an error deleting the entry. Please try again.');
     }
   };
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
@@ -95,7 +95,7 @@ const CreatinineChartPage = () => {
         {creatinineData.length > 0 ? (
           <CreatinineChart creatinineData={creatinineData} onRemoveEntry={removeCreatinineEntry} />
         ) : (
-          <p>No hay datos de creatinina para mostrar.</p>
+          <p>There is no creatinine data to display.</p>
         )}
       </div>
     </div>

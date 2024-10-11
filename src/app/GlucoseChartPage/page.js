@@ -17,7 +17,7 @@ const GlucoseChartPage = () => {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !sessionData.session) {
-          throw new Error('Error obteniendo la sesión. Inicia sesión para ver los datos.');
+          throw new Error('Error getting session. Please log in to view the data.');
         }
 
         setSession(sessionData.session);
@@ -29,11 +29,11 @@ const GlucoseChartPage = () => {
           .order('created_at', { ascending: true });
 
         if (dataError) {
-          throw new Error('Error al obtener los datos de glucosa.');
+          throw new Error('Error fetching glucose data.');
         }
 
         if (data.length === 0) {
-          throw new Error('No hay datos de glucosa disponibles.');
+          throw new Error('No glucose data available.');
         }
 
         const formattedData = data.map(entry => ({
@@ -60,9 +60,9 @@ const GlucoseChartPage = () => {
     fetchSessionAndData();
   }, []);
 
-  // Función para eliminar una entrada de glucosa
+  // Function to remove a glucose entry
   const removeGlucoseEntry = async (id) => {
-    const confirmation = window.confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción es permanente.');
+    const confirmation = window.confirm('Are you sure you want to delete this record? This action is permanent.');
     if (!confirmation) return;
 
     try {
@@ -75,12 +75,12 @@ const GlucoseChartPage = () => {
 
       setGlucoseData(prevData => prevData.filter(entry => entry.id !== id));
     } catch (error) {
-      console.error('Error al eliminar la entrada:', error.message);
-      alert('Hubo un error al eliminar la entrada. Por favor, inténtalo de nuevo.');
+      console.error('Error deleting entry:', error.message);
+      alert('There was an error deleting the entry. Please try again.');
     }
   };
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
@@ -93,7 +93,7 @@ const GlucoseChartPage = () => {
         {glucoseData.length > 0 ? (
           <GlucoseChart data={glucoseData} setData={setGlucoseData} onRemoveEntry={removeGlucoseEntry} />
         ) : (
-          <p>No hay datos de glucosa para mostrar.</p>
+          <p>No glucose data to display.</p>
         )}
       </div>
     </div>
